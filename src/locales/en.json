@@ -1,0 +1,14 @@
+{
+  "name": "Arrow",
+  "description": "Straight-line tool with arrowheads. Solid, open, or hollow heads; optional double-ended. Hold Shift to snap to 45°.",
+  "tool": "Arrow",
+  "settings": {
+    "headStyleLabel": "Head style",
+    "headStyle": {
+      "solid": "Solid",
+      "open": "Open",
+      "hollow": "Hollow"
+    },
+    "doubleHeaded": "Double-headed"
+  }
+}

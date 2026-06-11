@@ -1,0 +1,14 @@
+{
+  "name": "矢印",
+  "description": "矢印付きの直線ツール。塗りつぶし・開き・中抜きの矢じり、両端矢印にも対応。Shift を押しながら描くと 45° にスナップ。",
+  "tool": "矢印",
+  "settings": {
+    "headStyleLabel": "矢じりのスタイル",
+    "headStyle": {
+      "solid": "塗りつぶし",
+      "open": "開き",
+      "hollow": "中抜き"
+    },
+    "doubleHeaded": "両端矢印"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "箭頭",
+  "description": "帶箭頭的直線工具，可選實心、開放或空心箭頭，並支援雙向箭頭。按住 Shift 可吸附至 45° 角。",
+  "tool": "箭頭",
+  "settings": {
+    "headStyleLabel": "箭頭樣式",
+    "headStyle": {
+      "solid": "實心",
+      "open": "開放",
+      "hollow": "空心"
+    },
+    "doubleHeaded": "雙向箭頭"
+  }
+}

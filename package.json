@@ -1,0 +1,22 @@
+{
+  "name": "openpen-plugin-arrow",
+  "version": "1.0.0",
+  "description": "Arrow drawing tool for OpenPen.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "openpen-build",
+    "dev": "openpen-build --watch",
+    "check": "openpen-build --check",
+    "pack": "openpen pack"
+  },
+  "devDependencies": {
+    "@openpen/build": "1.1.0",
+    "@openpen/module-api": "1.2.0",
+    "openpen-cli": "1.1.0",
+    "typescript": "^6.0.3",
+    "vitest": "^3.2.6",
+    "vue": "^3.5.34"
+  },
+  "license": "MIT"
+}
