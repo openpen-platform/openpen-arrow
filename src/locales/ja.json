@@ -10,5 +10,9 @@
       "hollow": "中抜き"
     },
     "doubleHeaded": "両端矢印"
+  },
+  "options": {
+    "label": "矢印のオプション",
+    "lineWidth": "線の太さ"
   }
 }

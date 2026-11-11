@@ -22,6 +22,12 @@ export interface ArrowToolOptions {
   headStyle: () => HeadStyle
   /** Returns whether both ends get a head at draw time. */
   doubleHeaded: () => boolean
+  /**
+   * Returns the arrow's own line width at draw time. When given, it replaces
+   * the host's global width for this stroke only; the host style object is
+   * copied, never mutated.
+   */
+  lineWidth?: () => number
 }
 
 /** Snap `point` to 45° multiples around `start` while Shift is held. */
@@ -120,7 +126,7 @@ export function createArrowTool(opts: ArrowToolOptions): Tool {
     onPointerDown(_ctx, point, s) {
       start = { ...point }
       end = null
-      style = { ...s }
+      style = opts.lineWidth ? { ...s, lineWidth: opts.lineWidth() } : { ...s }
     },
 
     onPointerMove(ctx, point, modifiers: PointerModifiers = {}) {

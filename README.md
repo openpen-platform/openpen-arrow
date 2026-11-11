@@ -10,7 +10,10 @@ snap the line to the nearest 45°.
 
 - Solid (filled), open (chevron), and hollow (outlined) arrowheads
 - Optional double-ended arrows
-- Head size scales with the stroke width
+- Its own line width (1–20 px), set from the control bar without moving the
+  global stroke-width slider
+- Head size scales with the line width
+- A keyboard shortcut to switch to the arrow tool
 - Shift-to-snap at 45° increments, matching the built-in line tool
 
 ## Install
@@ -28,14 +31,21 @@ To install a build from source instead, see [Build](#build) and
 
 ## Usage
 
-1. Click the **Arrow** button in the control bar's tools group to switch to the
-   arrow tool.
+1. Click the **Arrow** button in the control bar's tools group, or press
+   **Ctrl+Alt+A** (**⌘⌥A** on macOS) while drawing mode is on, to switch to the
+   arrow tool. The shortcut is not available on Linux Wayland sessions; use the
+   button there.
 2. Press at the point where the arrow should start, drag, and release where the
    arrowhead should be. The arrowhead is drawn at the release point.
 3. Hold **Shift** while dragging to snap the line to the nearest 45° angle.
 
-The arrow uses the current stroke color and line width; the head size scales
-with the line width. A very short drag is discarded and leaves no arrow behind.
+To change the arrow's line width, click the small caret next to the **Arrow**
+button and drag the **Line width** slider (1–20 px, default 4 px). The width
+applies only to arrows: the global stroke-width slider and the other tools keep
+their own width, and the value is kept across restarts.
+
+The arrow uses the current stroke color; the head size scales with the arrow's
+line width. A very short drag is discarded and leaves no arrow behind.
 
 Arrows are stored with the head style and double-headed choice that were active
 when they were drawn, so changing the settings later does not alter arrows
@@ -43,12 +53,15 @@ that are already on the canvas.
 
 ## Settings
 
-Open OpenPen's settings and choose the **Arrow** panel.
+The line width lives in the control-bar popover described above. The head
+options are in OpenPen's settings under the **Arrow** panel.
 
 | Setting | Values | Default | Description |
 | --- | --- | --- | --- |
 | **Head style** | `solid`, `open`, `hollow` | `solid` | `solid` is a filled triangle, `open` is a chevron, `hollow` is an outlined triangle |
 | **Double-headed** | on, off | off | Add an arrowhead to both ends of the line |
+
+The shortcut can be rebound under **Settings → Shortcuts**.
 
 ## Build
 

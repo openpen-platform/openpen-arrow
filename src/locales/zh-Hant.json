@@ -10,5 +10,9 @@
       "hollow": "空心"
     },
     "doubleHeaded": "雙向箭頭"
+  },
+  "options": {
+    "label": "箭頭選項",
+    "lineWidth": "線寬"
   }
 }

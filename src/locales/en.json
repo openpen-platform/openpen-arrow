@@ -10,5 +10,9 @@
       "hollow": "Hollow"
     },
     "doubleHeaded": "Double-headed"
+  },
+  "options": {
+    "label": "Arrow options",
+    "lineWidth": "Line width"
   }
 }

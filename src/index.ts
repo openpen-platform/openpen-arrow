@@ -5,8 +5,15 @@
  *   - The arrow `Tool` to `canvas.tools` (custom `renderStroke` draws the
  *     shaft + barbs; the host fallback polyline has no arrowheads).
  *   - A crosshair cursor for `ui.cursors`.
- *   - A tool button in the control bar 'tools' group.
+ *   - A tool button in the control bar 'tools' group, with a caret that opens
+ *     an options popover (arrow line width), same pattern as the host's shape
+ *     and eraser buttons.
  *   - A settings panel (head style + double-headed) for `ui.settings.panels`.
+ *   - A drawing-scope shortcut that switches to the arrow tool.
+ *
+ * The arrow line width is the plugin's own setting (1–20, default 4), not the
+ * host's global width: the tool swaps it into a copy of the host style when a
+ * stroke starts, so the global slider and other tools are untouched.
  *
  * Head style / double-headed are config (not in-progress stroke state), so they
  * live in a module-scoped holder hydrated from settings in setup(); the tool
@@ -16,7 +23,9 @@
 import { defineModule, z } from '@openpen/module-api'
 export { MODULE_ID } from './module-id'
 import { MODULE_ID } from './module-id'
+import { activateArrowTool } from './activate'
 import { createArrowTool, renderArrowStroke } from './arrow-tool'
+import { ARROW_LINE_WIDTH_DEFAULT, clampArrowLineWidth } from './line-width'
 import ArrowToolButton from './ArrowToolButton.vue'
 import ArrowSettingsPanel from './ArrowSettingsPanel.vue'
 import en from './locales/en.json'
@@ -27,15 +36,24 @@ import ja from './locales/ja.json'
 const settingsSchema = z.object({
   headStyle: z.enum(['solid', 'open', 'hollow']).default('solid'),
   doubleHeaded: z.boolean().default(false),
+  // Unbounded on purpose: an out-of-range saved value is clamped on read
+  // instead of failing validation and discarding the whole settings object.
+  lineWidth: z.number().default(ARROW_LINE_WIDTH_DEFAULT),
 })
 type ArrowSettings = z.infer<typeof settingsSchema>
 
-const liveSettings: ArrowSettings = { headStyle: 'solid', doubleHeaded: false }
+const liveSettings: ArrowSettings = {
+  headStyle: 'solid',
+  doubleHeaded: false,
+  lineWidth: ARROW_LINE_WIDTH_DEFAULT,
+}
 
 const arrowTool = createArrowTool({
   headStyle: () => liveSettings.headStyle,
   doubleHeaded: () => liveSettings.doubleHeaded,
+  lineWidth: () => liveSettings.lineWidth,
 })
+
 
 const ARROW_CURSOR = {
   svg:
@@ -58,6 +76,7 @@ export default defineModule({
     const apply = (s: ArrowSettings) => {
       liveSettings.headStyle = s.headStyle
       liveSettings.doubleHeaded = s.doubleHeaded
+      liveSettings.lineWidth = clampArrowLineWidth(s.lineWidth ?? ARROW_LINE_WIDTH_DEFAULT)
     }
     apply(ctx.getSettings<ArrowSettings>())
     const stop = ctx.onSettingsChange<ArrowSettings>(apply)
@@ -91,6 +110,24 @@ export default defineModule({
         component: ArrowToolButton,
         defaultGroup: 'tools',
         groupHint: { separator: 'auto' },
+      },
+    ],
+    shortcuts: [
+      {
+        id: 'activate-arrow',
+        // Host convention: CommandOrControl + modifier + letter. A = Arrow;
+        // Alt instead of Shift because CommandOrControl+Shift+A is the host's
+        // drawing-mode toggle. Users can rebind it in Settings → Shortcuts.
+        keys: 'CommandOrControl+Alt+A',
+        scope: 'drawing',
+        label: {
+          en: 'Switch to Arrow',
+          'zh-Hant': '切換到箭頭',
+          'zh-Hans': '切换到箭头',
+          ja: '矢印に切り替え',
+        },
+        userCustomizable: true,
+        handler: activateArrowTool,
       },
     ],
     settingsPanels: [

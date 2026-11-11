@@ -68,9 +68,9 @@ describe('defineModule contract — settingsSchema', () => {
     expect(arrowModule.settingsSchema).toBeInstanceOf(z.ZodObject)
   })
 
-  it('parses an empty object to the documented defaults (headStyle solid, doubleHeaded false)', () => {
+  it('parses an empty object to the documented defaults (headStyle solid, doubleHeaded false, lineWidth 4)', () => {
     const parsed = (arrowModule.settingsSchema as z.ZodTypeAny).parse({})
-    expect(parsed).toEqual({ headStyle: 'solid', doubleHeaded: false })
+    expect(parsed).toEqual({ headStyle: 'solid', doubleHeaded: false, lineWidth: 4 })
   })
 
   it('accepts each valid head style and rejects an unknown one', () => {
