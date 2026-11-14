@@ -50,11 +50,8 @@ describe('defineModule contract — tool three-piece set (tools + cursors + cont
     expect(bar![0].component).toBeTruthy()
   })
 
-  it('contributes a settings panel', () => {
-    const panels = arrowModule.contributes.settingsPanels
-    expect(panels).toHaveLength(1)
-    expect(panels![0].id).toBe('arrow-settings')
-    expect(panels![0].component).toBeTruthy()
+  it('contributes no settings-window panel: every arrow option lives in the control-bar popover', () => {
+    expect(arrowModule.contributes.settingsPanels ?? []).toHaveLength(0)
   })
 
   it('provides locales for all four languages', () => {
@@ -68,21 +65,17 @@ describe('defineModule contract — settingsSchema', () => {
     expect(arrowModule.settingsSchema).toBeInstanceOf(z.ZodObject)
   })
 
-  it('parses an empty object to the documented defaults (headStyle solid, doubleHeaded false, lineWidth 4)', () => {
+  it('parses an empty object to the documented defaults (headStyle solid, doubleHeaded false, lineStyle solid, lineWidth 4)', () => {
     const parsed = (arrowModule.settingsSchema as z.ZodTypeAny).parse({})
-    expect(parsed).toEqual({ headStyle: 'solid', doubleHeaded: false, lineWidth: 4 })
+    expect(parsed).toEqual({ headStyle: 'solid', doubleHeaded: false, lineStyle: 'solid', lineWidth: 4 })
   })
 
-  it('accepts each valid head style and rejects an unknown one', () => {
+  it('keeps each valid head style and a boolean doubleHeaded', () => {
     const schema = arrowModule.settingsSchema as z.ZodTypeAny
     for (const headStyle of ['solid', 'open', 'hollow']) {
       expect(schema.parse({ headStyle }).headStyle).toBe(headStyle)
     }
-    expect(() => schema.parse({ headStyle: 'triangle' })).toThrow()
-  })
-
-  it('rejects a non-boolean doubleHeaded', () => {
-    expect(() => (arrowModule.settingsSchema as z.ZodTypeAny).parse({ doubleHeaded: 'yes' })).toThrow()
+    expect(schema.parse({ doubleHeaded: true }).doubleHeaded).toBe(true)
   })
 })
 

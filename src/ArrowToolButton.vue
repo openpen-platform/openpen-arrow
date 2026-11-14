@@ -8,9 +8,10 @@
  * popovers, outside-click, placement, vertical bars) is handled by the
  * dropdown's inner AppPopover.
  *
- * The popover writes the arrow line width to this plugin's settings; setup()
- * in every window (control bar and overlays) picks the change up through
- * onSettingsChange, so the overlay draws with the new width immediately.
+ * The popover writes the arrow line width, line style, head style and
+ * double-headed choice to this plugin's settings; setup() in every window (control bar and
+ * overlays) picks the change up through onSettingsChange, so the next arrow is
+ * drawn with the new choice immediately. Saved values are clamped on read.
  */
 import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue'
 import {
@@ -19,7 +20,14 @@ import {
   SNAP_EDGE_KEY,
   useModuleContext,
 } from '@openpen/module-api'
-import { AppButtonDropdown, AppSlider } from '@openpen/module-api/uikit'
+import {
+  AppButtonDropdown,
+  AppPopoverPanel,
+  AppPopoverRow,
+  AppSegmented,
+  AppSlider,
+  AppToggle,
+} from '@openpen/module-api/uikit'
 import { MODULE_ID } from './module-id'
 import { activateArrowTool } from './activate'
 import {
@@ -28,6 +36,21 @@ import {
   ARROW_LINE_WIDTH_MIN,
   clampArrowLineWidth,
 } from './line-width'
+import {
+  clampDoubleHeaded,
+  clampHeadStyle,
+  HEAD_STYLE_DEFAULT,
+  HEAD_STYLES,
+} from './head-style'
+import { clampLineStyle, LINE_STYLE_DEFAULT, LINE_STYLES, type LineStyle } from './line-style'
+import type { HeadStyle } from './arrow-geometry'
+
+interface ArrowSettings {
+  lineWidth?: number
+  lineStyle?: unknown
+  headStyle?: unknown
+  doubleHeaded?: unknown
+}
 
 const POPOVER_ID = 'openpen-arrow-options'
 
@@ -35,6 +58,40 @@ const ctx = useModuleContext(MODULE_ID)
 const label = computed(() => ctx.t('tool'))
 const optionsLabel = computed(() => ctx.t('options.label'))
 const lineWidthLabel = computed(() => ctx.t('options.lineWidth'))
+const lineStyleLabel = computed(() => ctx.t('options.lineStyle'))
+const headStyleLabel = computed(() => ctx.t('options.headStyle'))
+const doubleHeadedLabel = computed(() => ctx.t('options.doubleHeaded'))
+// Preview icons for the segmented options (currentColor follows the segment).
+const svg = (inner: string) =>
+  `<svg width="28" height="14" viewBox="0 0 28 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`
+const HEAD_ICONS: Record<HeadStyle, string> = {
+  solid: svg('<line x1="2" y1="7" x2="14" y2="7"/><path d="M26 7 L14 2 L14 12 Z" fill="currentColor"/>'),
+  open: svg('<line x1="2" y1="7" x2="25" y2="7"/><polyline points="18,2 25,7 18,12"/>'),
+  hollow: svg('<line x1="2" y1="7" x2="14" y2="7"/><path d="M26 7 L14 2 L14 12 Z"/>'),
+}
+const LINE_ICONS: Record<LineStyle, string> = {
+  solid: svg('<line x1="2" y1="7" x2="26" y2="7"/>'),
+  dashed: svg('<line x1="2" y1="7" x2="26" y2="7" stroke-dasharray="5 3.5"/>'),
+  dotted: svg('<line x1="3" y1="7" x2="26" y2="7" stroke-width="2.6" stroke-dasharray="0.1 5"/>'),
+}
+const lineStyleOptions = computed(() =>
+  LINE_STYLES.map((value) => ({
+    value,
+    label: ctx.t(`options.lineStyles.${value}`),
+    icon: LINE_ICONS[value],
+    iconOnly: true,
+    testid: `arrow-line-style-${value}`,
+  })),
+)
+const headStyleOptions = computed(() =>
+  HEAD_STYLES.map((value) => ({
+    value,
+    label: ctx.t(`options.headStyles.${value}`),
+    icon: HEAD_ICONS[value],
+    iconOnly: true,
+    testid: `arrow-head-style-${value}`,
+  })),
+)
 
 const activeTool = inject(ACTIVE_TOOL_KEY)
 const snapEdge = inject(SNAP_EDGE_KEY)
@@ -45,21 +102,45 @@ const isActive = computed(() => activeTool?.value === 'arrow')
 watch(() => snapEdge?.value, () => { modalManager?.close(POPOVER_ID) })
 
 const lineWidth = ref(ARROW_LINE_WIDTH_DEFAULT)
+const lineStyle = ref<LineStyle>(LINE_STYLE_DEFAULT)
+const headStyle = ref<HeadStyle>(HEAD_STYLE_DEFAULT)
+const doubleHeaded = ref(false)
 let unsub: (() => void) | null = null
 
-onMounted(() => {
-  const s = ctx.getSettings<{ lineWidth?: number }>()
+function load(s: ArrowSettings) {
   lineWidth.value = clampArrowLineWidth(s.lineWidth ?? ARROW_LINE_WIDTH_DEFAULT)
-  unsub = ctx.onSettingsChange<{ lineWidth?: number }>((next) => {
-    lineWidth.value = clampArrowLineWidth(next.lineWidth ?? ARROW_LINE_WIDTH_DEFAULT)
-  })
+  lineStyle.value = clampLineStyle(s.lineStyle)
+  headStyle.value = clampHeadStyle(s.headStyle)
+  doubleHeaded.value = clampDoubleHeaded(s.doubleHeaded)
+}
+
+onMounted(() => {
+  load(ctx.getSettings<ArrowSettings>())
+  unsub = ctx.onSettingsChange<ArrowSettings>(load)
 })
 onUnmounted(() => unsub?.())
 
 async function setLineWidth(value: number) {
   const next = clampArrowLineWidth(Number(value))
   lineWidth.value = next
-  await ctx.updateSettings<{ lineWidth: number }>({ lineWidth: next })
+  await ctx.updateSettings<ArrowSettings>({ lineWidth: next })
+}
+
+async function setLineStyle(value: string) {
+  const next = clampLineStyle(value)
+  lineStyle.value = next
+  await ctx.updateSettings<ArrowSettings>({ lineStyle: next })
+}
+
+async function setHeadStyle(value: string) {
+  const next = clampHeadStyle(value)
+  headStyle.value = next
+  await ctx.updateSettings<ArrowSettings>({ headStyle: next })
+}
+
+async function setDoubleHeaded(value: boolean) {
+  doubleHeaded.value = value
+  await ctx.updateSettings<ArrowSettings>({ doubleHeaded: value })
 }
 
 /** Opening the options also selects the tool, like the host's shape caret. */
@@ -88,82 +169,46 @@ function activateIfNeeded() {
       </svg>
     </template>
     <template #popover-content>
-      <div class="arrow-popover" data-testid="controlbar-arrow-popover">
-        <div class="arrow-popover-head">
-          <span class="arrow-popover-title">{{ lineWidthLabel }}</span>
-          <span class="arrow-popover-value" data-testid="arrow-line-width-value">{{ lineWidth }}px</span>
-        </div>
-        <AppSlider
-          :model-value="lineWidth"
-          :min="ARROW_LINE_WIDTH_MIN"
-          :max="ARROW_LINE_WIDTH_MAX"
-          :step="1"
-          track-height="8px"
-          track-radius="4px"
-          thumb-width="24px"
-          thumb-height="16px"
-          thumb-radius="8px"
-          :aria-label="lineWidthLabel"
-          data-testid="arrow-line-width-slider"
-          @update:model-value="setLineWidth"
-        />
-        <div class="arrow-popover-scale" aria-hidden="true">
-          <span>{{ ARROW_LINE_WIDTH_MIN }}px</span>
-          <span>{{ ARROW_LINE_WIDTH_DEFAULT }}px</span>
-          <span>{{ ARROW_LINE_WIDTH_MAX }}px</span>
-        </div>
-      </div>
+      <AppPopoverPanel :title="optionsLabel" data-testid="controlbar-arrow-popover">
+        <AppPopoverRow :label="lineWidthLabel">
+          <AppSlider
+            :model-value="lineWidth"
+            :min="ARROW_LINE_WIDTH_MIN"
+            :max="ARROW_LINE_WIDTH_MAX"
+            :step="1"
+            :value-label="`${lineWidth}px`"
+            :ariaLabel="lineWidthLabel"
+            data-testid="arrow-line-width-slider"
+            @update:model-value="setLineWidth"
+          />
+        </AppPopoverRow>
+        <AppPopoverRow :label="headStyleLabel">
+          <AppSegmented
+            :model-value="headStyle"
+            :options="headStyleOptions"
+            :ariaLabel="headStyleLabel"
+            data-testid="arrow-head-style"
+            @update:model-value="setHeadStyle"
+          />
+        </AppPopoverRow>
+        <AppPopoverRow :label="lineStyleLabel">
+          <AppSegmented
+            :model-value="lineStyle"
+            :options="lineStyleOptions"
+            :ariaLabel="lineStyleLabel"
+            data-testid="arrow-line-style"
+            @update:model-value="setLineStyle"
+          />
+        </AppPopoverRow>
+        <AppPopoverRow :label="doubleHeadedLabel">
+          <AppToggle
+            :model-value="doubleHeaded"
+            :aria-label="doubleHeadedLabel"
+            testid="arrow-double-headed-toggle"
+            @update:model-value="setDoubleHeaded"
+          />
+        </AppPopoverRow>
+      </AppPopoverPanel>
     </template>
   </AppButtonDropdown>
 </template>
-
-<style scoped>
-/*
- * Popover layout mirrors the host's stroke-width popup. The host keeps its
- * popover styles in a global stylesheet plugins cannot import, so this is a
- * local copy built on the public --openpen-* tokens. Scoped styles still
- * apply: the slot content is rendered by this component even though the
- * popover teleports it.
- *
- * One column in both bar orientations, so vertical bars need no variant;
- * AppPopover places it beside the bar.
- *
- * min-width gives AppSlider (width: 100%) a reference width; 180px matches
- * the host popup's usable floor.
- */
-.arrow-popover {
-  min-width: 180px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.arrow-popover-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.arrow-popover-title {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--openpen-color-text-muted);
-}
-
-.arrow-popover-value {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--openpen-color-text-primary);
-}
-
-.arrow-popover-scale {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: var(--openpen-color-text-muted);
-  padding: 0 2px;
-}
-</style>

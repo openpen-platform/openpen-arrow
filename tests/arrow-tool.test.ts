@@ -22,6 +22,7 @@ function mockCtx() {
     arc: vi.fn(rec('arc')),
     fill: vi.fn(rec('fill')),
     stroke: vi.fn(rec('stroke')),
+    setLineDash: vi.fn(rec('setLineDash')),
     fillStyle: '',
     strokeStyle: '',
     lineWidth: 0,

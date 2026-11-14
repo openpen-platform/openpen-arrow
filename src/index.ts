@@ -6,16 +6,16 @@
  *     shaft + barbs; the host fallback polyline has no arrowheads).
  *   - A crosshair cursor for `ui.cursors`.
  *   - A tool button in the control bar 'tools' group, with a caret that opens
- *     an options popover (arrow line width), same pattern as the host's shape
- *     and eraser buttons.
- *   - A settings panel (head style + double-headed) for `ui.settings.panels`.
+ *     an options popover (line width, line style, head style, double-headed), same
+ *     pattern as the host's shape and eraser buttons. There is no settings
+ *     window panel: every arrow option lives in that popover.
  *   - A drawing-scope shortcut that switches to the arrow tool.
  *
  * The arrow line width is the plugin's own setting (1–20, default 4), not the
  * host's global width: the tool swaps it into a copy of the host style when a
  * stroke starts, so the global slider and other tools are untouched.
  *
- * Head style / double-headed are config (not in-progress stroke state), so they
+ * Line style / head style / double-headed are config (not in-progress stroke state), so they
  * live in a module-scoped holder hydrated from settings in setup(); the tool
  * factory reads them at draw time via accessor closures. In-progress stroke
  * state stays inside the tool factory's own closure.
@@ -27,30 +27,45 @@ import { activateArrowTool } from './activate'
 import { createArrowTool, renderArrowStroke } from './arrow-tool'
 import { ARROW_LINE_WIDTH_DEFAULT, clampArrowLineWidth } from './line-width'
 import ArrowToolButton from './ArrowToolButton.vue'
-import ArrowSettingsPanel from './ArrowSettingsPanel.vue'
+import {
+  clampDoubleHeaded,
+  clampHeadStyle,
+  HEAD_STYLE_DEFAULT,
+} from './head-style'
+import { clampLineStyle, LINE_STYLE_DEFAULT, type LineStyle } from './line-style'
+import type { HeadStyle } from './arrow-geometry'
 import en from './locales/en.json'
 import zhHant from './locales/zh-Hant.json'
 import zhHans from './locales/zh-Hans.json'
 import ja from './locales/ja.json'
 
+// Deliberately loose: an out-of-range saved value is clamped on read (see
+// `apply` below and the control-bar popover) instead of failing validation and
+// discarding the whole settings object.
 const settingsSchema = z.object({
-  headStyle: z.enum(['solid', 'open', 'hollow']).default('solid'),
-  doubleHeaded: z.boolean().default(false),
-  // Unbounded on purpose: an out-of-range saved value is clamped on read
-  // instead of failing validation and discarding the whole settings object.
+  headStyle: z.unknown().default(HEAD_STYLE_DEFAULT),
+  doubleHeaded: z.unknown().default(false),
+  lineStyle: z.unknown().default(LINE_STYLE_DEFAULT),
   lineWidth: z.number().default(ARROW_LINE_WIDTH_DEFAULT),
 })
 type ArrowSettings = z.infer<typeof settingsSchema>
 
-const liveSettings: ArrowSettings = {
-  headStyle: 'solid',
+const liveSettings: {
+  headStyle: HeadStyle
+  doubleHeaded: boolean
+  lineStyle: LineStyle
+  lineWidth: number
+} = {
+  headStyle: HEAD_STYLE_DEFAULT,
   doubleHeaded: false,
+  lineStyle: LINE_STYLE_DEFAULT,
   lineWidth: ARROW_LINE_WIDTH_DEFAULT,
 }
 
 const arrowTool = createArrowTool({
   headStyle: () => liveSettings.headStyle,
   doubleHeaded: () => liveSettings.doubleHeaded,
+  lineStyle: () => liveSettings.lineStyle,
   lineWidth: () => liveSettings.lineWidth,
 })
 
@@ -74,8 +89,9 @@ export default defineModule({
 
   setup(ctx) {
     const apply = (s: ArrowSettings) => {
-      liveSettings.headStyle = s.headStyle
-      liveSettings.doubleHeaded = s.doubleHeaded
+      liveSettings.headStyle = clampHeadStyle(s.headStyle)
+      liveSettings.doubleHeaded = clampDoubleHeaded(s.doubleHeaded)
+      liveSettings.lineStyle = clampLineStyle(s.lineStyle)
       liveSettings.lineWidth = clampArrowLineWidth(s.lineWidth ?? ARROW_LINE_WIDTH_DEFAULT)
     }
     apply(ctx.getSettings<ArrowSettings>())
@@ -128,18 +144,6 @@ export default defineModule({
         },
         userCustomizable: true,
         handler: activateArrowTool,
-      },
-    ],
-    settingsPanels: [
-      {
-        id: 'arrow-settings',
-        label: {
-          en: 'Arrow',
-          'zh-Hant': '箭頭',
-          'zh-Hans': '箭头',
-          ja: '矢印',
-        },
-        component: ArrowSettingsPanel,
       },
     ],
     locales: {

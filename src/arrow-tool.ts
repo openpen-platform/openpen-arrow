@@ -1,11 +1,13 @@
 /**
  * Arrow tool — a straight line with arrowhead(s). Shift snaps to 45° using the
  * same angle resolver as the built-in line tool. The finished stroke carries
- * `headStyle` / `doubleHeaded` as extra Stroke state so `renderArrowStroke`
+ * `headStyle` / `doubleHeaded` / `lineStyle` as extra Stroke state so `renderArrowStroke`
  * can redraw the heads on history replay (the host fallback polyline has no
  * arrowheads, so a custom renderer is mandatory here).
  */
 import { resolveStrokeColor } from '@openpen/module-api'
+import { clampDoubleHeaded, clampHeadStyle } from './head-style'
+import { clampLineStyle, shaftDash, type LineStyle } from './line-style'
 import type { Point, PointerModifiers, Stroke, StrokeStyle, Tool } from '@openpen/module-api'
 import {
   arrowBarbs,
@@ -22,6 +24,8 @@ export interface ArrowToolOptions {
   headStyle: () => HeadStyle
   /** Returns whether both ends get a head at draw time. */
   doubleHeaded: () => boolean
+  /** Returns the shaft line style at draw time; omitted means solid. */
+  lineStyle?: () => LineStyle
   /**
    * Returns the arrow's own line width at draw time. When given, it replaces
    * the host's global width for this stroke only; the host style object is
@@ -84,6 +88,7 @@ function paintArrow(
   style: StrokeStyle,
   headStyle: HeadStyle,
   doubleHeaded: boolean,
+  lineStyle: LineStyle = 'solid',
 ): void {
   const color = resolveStrokeColor(style.color)
   const headLen = arrowHeadLen(style.lineWidth)
@@ -103,10 +108,16 @@ function paintArrow(
   if (shaftSurvivesInset(shaftLen, shaftInset, doubleHeaded)) {
     const shaftEnd = insetAlong(start, end, shaftInset)
     const shaftStart = doubleHeaded ? insetAlong(end, start, shaftInset) : { ...start }
+    const dash = shaftDash(lineStyle, style.lineWidth)
+    if (dash.cap) ctx.lineCap = dash.cap
+    ctx.setLineDash(dash.pattern)
     ctx.beginPath()
     ctx.moveTo(shaftStart.x, shaftStart.y)
     ctx.lineTo(shaftEnd.x, shaftEnd.y)
     ctx.stroke()
+    // Heads are always solid: back to a continuous line and the host cap.
+    ctx.setLineDash([])
+    ctx.lineCap = style.lineCap
   }
 
   drawHead(ctx, start, end, headLen, headStyle, color)
@@ -133,7 +144,7 @@ export function createArrowTool(opts: ArrowToolOptions): Tool {
       if (!start || !style) return
       end = resolveEnd(start, point, modifiers.shiftKey === true)
       if (distance(start, end) < MIN_ARROW_LENGTH) return
-      paintArrow(ctx, start, end, style, opts.headStyle(), opts.doubleHeaded())
+      paintArrow(ctx, start, end, style, opts.headStyle(), opts.doubleHeaded(), opts.lineStyle?.())
     },
 
     onPointerUp(_ctx, point, modifiers: PointerModifiers = {}): Stroke | null {
@@ -149,6 +160,7 @@ export function createArrowTool(opts: ArrowToolOptions): Tool {
               style: { ...style },
               headStyle: opts.headStyle(),
               doubleHeaded: opts.doubleHeaded(),
+              lineStyle: opts.lineStyle ? opts.lineStyle() : 'solid',
             }
       start = null
       end = null
@@ -159,7 +171,7 @@ export function createArrowTool(opts: ArrowToolOptions): Tool {
 }
 
 /**
- * History-replay renderer. Reads `headStyle` / `doubleHeaded` back from the
+ * History-replay renderer. Reads `headStyle` / `doubleHeaded` / `lineStyle` back from the
  * Stroke's extra-state index signature (TypeScript cannot infer them).
  */
 export function renderArrowStroke(
@@ -169,7 +181,8 @@ export function renderArrowStroke(
   if (stroke.points.length < 2) return
   const start = stroke.points[0]
   const end = stroke.points[stroke.points.length - 1]
-  const headStyle = (stroke.headStyle as HeadStyle | undefined) ?? 'solid'
-  const doubleHeaded = (stroke.doubleHeaded as boolean | undefined) ?? false
-  paintArrow(ctx, start, end, stroke.style, headStyle, doubleHeaded)
+  const headStyle = clampHeadStyle(stroke.headStyle)
+  const doubleHeaded = clampDoubleHeaded(stroke.doubleHeaded)
+  const lineStyle = clampLineStyle(stroke.lineStyle)
+  paintArrow(ctx, start, end, stroke.style, headStyle, doubleHeaded, lineStyle)
 }

@@ -12,6 +12,8 @@ snap the line to the nearest 45°.
 - Optional double-ended arrows
 - Its own line width (1–20 px), set from the control bar without moving the
   global stroke-width slider
+- Solid, dashed or dotted line style (the arrowhead always stays solid)
+- Head style and double-headed set from the same control-bar panel
 - Head size scales with the line width
 - A keyboard shortcut to switch to the arrow tool
 - Shift-to-snap at 45° increments, matching the built-in line tool
@@ -39,27 +41,35 @@ To install a build from source instead, see [Build](#build) and
    arrowhead should be. The arrowhead is drawn at the release point.
 3. Hold **Shift** while dragging to snap the line to the nearest 45° angle.
 
-To change the arrow's line width, click the small caret next to the **Arrow**
-button and drag the **Line width** slider (1–20 px, default 4 px). The width
-applies only to arrows: the global stroke-width slider and the other tools keep
-their own width, and the value is kept across restarts.
+To change the arrow's options, click the small caret next to the **Arrow**
+button. The panel that opens has the **Line width** slider, the **Line style**
+choice (solid, dashed or dotted), the **Head style** choice (solid, open or
+hollow) and the **Double-headed** switch. They apply to
+the next arrow you draw right away. The line width applies only to arrows: the
+global stroke-width slider and the other tools keep their own width. All
+options are kept across restarts.
 
 The arrow uses the current stroke color; the head size scales with the arrow's
 line width. A very short drag is discarded and leaves no arrow behind.
 
-Arrows are stored with the head style and double-headed choice that were active
-when they were drawn, so changing the settings later does not alter arrows
+Arrows are stored with the line style, head style and double-headed choice that were active
+when they were drawn, so changing the options later does not alter arrows
 that are already on the canvas.
 
 ## Settings
 
-The line width lives in the control-bar popover described above. The head
-options are in OpenPen's settings under the **Arrow** panel.
+All four options are set in the control-bar panel described above; OpenPen's
+settings window has no Arrow page.
 
-| Setting | Values | Default | Description |
+| Option | Values | Default | Description |
 | --- | --- | --- | --- |
+| **Line width** | 1–20 px | 4 px | Width of the arrow's line; the head size scales with it |
+| **Line style** | `solid`, `dashed`, `dotted` | `solid` | Style of the arrow's line; dash and dot spacing scale with the line width, and the arrowhead is always drawn solid |
 | **Head style** | `solid`, `open`, `hollow` | `solid` | `solid` is a filled triangle, `open` is a chevron, `hollow` is an outlined triangle |
 | **Double-headed** | on, off | off | Add an arrowhead to both ends of the line |
+
+A saved value outside these ranges is corrected to the nearest allowed value
+(or the default) when OpenPen starts.
 
 The shortcut can be rebound under **Settings → Shortcuts**.
 
