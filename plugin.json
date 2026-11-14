@@ -1,9 +1,15 @@
 {
   "id": "@openpen/arrow",
   "name": "Arrow",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "OpenPen",
   "description": "Straight-line tool with arrowheads. Solid, open, or hollow heads; optional double-ended. Hold Shift to snap to 45°.",
-  "minAppVersion": "1.0.0",
-  "renderer": "dist/renderer.js"
+  "minAppVersion": "1.6.0",
+  "renderer": "dist/renderer.js",
+  "changelog": [
+    "Options panel in the control bar: click the caret next to the Arrow button to set line width, head style, line style and double-headed.",
+    "New line styles: solid, dashed and dotted; the arrowhead always stays solid.",
+    "New shortcut Ctrl+Alt+A (Cmd+Option+A on macOS) switches to the Arrow tool; it can be rebound in Settings.",
+    "Requires OpenPen 1.6.0 or later."
+  ]
 }

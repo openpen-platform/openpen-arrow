@@ -17,7 +17,7 @@ describe('defineModule contract — identity & ids', () => {
   })
 
   it('declares a semver version', () => {
-    expect(arrowModule.version).toMatch(/^\d+\.\d+\.\d+$/)
+    expect(arrowModule.version).toBe('1.1.0')
   })
 })
 

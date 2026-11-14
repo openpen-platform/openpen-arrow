@@ -20,7 +20,7 @@ snap the line to the nearest 45°.
 
 ## Install
 
-Requires OpenPen 1.0.0 or later.
+Requires OpenPen 1.6.0 or later.
 
 Install from the plugin catalog, then restart OpenPen:
 
