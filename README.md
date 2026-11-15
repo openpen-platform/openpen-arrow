@@ -6,6 +6,12 @@ Draw a line and it gets an arrowhead. Choose between solid, open, or hollow
 heads, optionally put a head on both ends, and hold **Shift** while dragging to
 snap the line to the nearest 45°.
 
+<p align="center">
+  <img src=".github/readme-demo.gif" alt="OpenPen Arrow: an arrow is dragged onto a documentation page and points at the Publish button, a Shift-drag snaps a second arrow straight to the Add question button, and the caret panel switches to a hollow, dashed, double-headed arrow that is drawn next" width="800" />
+</p>
+
+<p align="center"><sub>Background: Starlight documentation theme by the Astro contributors (https://starlight.astro.build), MIT License (https://opensource.org/license/mit). The text and the editor figure are fictional.</sub></p>
+
 ## Features
 
 - Solid (filled), open (chevron), and hollow (outlined) arrowheads
