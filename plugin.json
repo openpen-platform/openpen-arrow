@@ -1,7 +1,7 @@
 {
   "id": "@openpen/arrow",
   "name": "Arrow",
-  "version": "1.1.0",
+  "version": "1.1.1-rc.1",
   "author": "OpenPen",
   "description": "Straight-line tool with arrowheads. Solid, open, or hollow heads; optional double-ended. Hold Shift to snap to 45°.",
   "minAppVersion": "1.6.0",
