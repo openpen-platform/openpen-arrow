@@ -18,5 +18,8 @@
       "hollow": "中抜き"
     },
     "doubleHeaded": "両端矢印"
+  },
+  "mcp": {
+    "drawTitle": "矢印を描く"
   }
 }

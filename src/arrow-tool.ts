@@ -126,6 +126,29 @@ function paintArrow(
   ctx.restore()
 }
 
+/**
+ * The finished arrow Stroke for `start` → `end`, or null when the arrow is
+ * shorter than MIN_ARROW_LENGTH. Shared by the pointer tool and the MCP draw
+ * tool so an arrow an agent draws is the same stroke a manual drag makes.
+ */
+export function buildArrowStroke(
+  start: Point,
+  end: Point,
+  style: StrokeStyle,
+  opts: ArrowToolOptions,
+): Stroke | null {
+  if (distance(start, end) < MIN_ARROW_LENGTH) return null
+  return {
+    id: crypto.randomUUID(),
+    tool: 'arrow',
+    points: [{ ...start }, { ...end }],
+    style: opts.lineWidth ? { ...style, lineWidth: opts.lineWidth() } : { ...style },
+    headStyle: opts.headStyle(),
+    doubleHeaded: opts.doubleHeaded(),
+    lineStyle: opts.lineStyle ? opts.lineStyle() : 'solid',
+  }
+}
+
 export function createArrowTool(opts: ArrowToolOptions): Tool {
   let start: Point | null = null
   let end: Point | null = null
@@ -150,18 +173,8 @@ export function createArrowTool(opts: ArrowToolOptions): Tool {
     onPointerUp(_ctx, point, modifiers: PointerModifiers = {}): Stroke | null {
       if (!start || !style) return null
       const finalEnd = end ?? resolveEnd(start, point, modifiers.shiftKey === true)
-      const result: Stroke | null =
-        distance(start, finalEnd) < MIN_ARROW_LENGTH
-          ? null
-          : {
-              id: crypto.randomUUID(),
-              tool: 'arrow',
-              points: [{ ...start }, { ...finalEnd }],
-              style: { ...style },
-              headStyle: opts.headStyle(),
-              doubleHeaded: opts.doubleHeaded(),
-              lineStyle: opts.lineStyle ? opts.lineStyle() : 'solid',
-            }
+      // `style` already carries the arrow width (swapped in at pointer-down).
+      const result = buildArrowStroke(start, finalEnd, style, { ...opts, lineWidth: undefined })
       start = null
       end = null
       style = null

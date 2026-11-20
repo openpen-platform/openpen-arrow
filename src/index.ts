@@ -10,6 +10,8 @@
  *     pattern as the host's shape and eraser buttons. There is no settings
  *     window panel: every arrow option lives in that popover.
  *   - A drawing-scope shortcut that switches to the arrow tool.
+ *   - The MCP tool `draw` (`openpen.arrow__draw` for agents) and its usage
+ *     guide: an agent draws the same arrow stroke a manual drag would make.
  *
  * The arrow line width is the plugin's own setting (1–20, default 4), not the
  * host's global width: the tool swaps it into a copy of the host style when a
@@ -25,6 +27,8 @@ export { MODULE_ID } from './module-id'
 import { MODULE_ID } from './module-id'
 import { activateArrowTool } from './activate'
 import { createArrowTool, renderArrowStroke } from './arrow-tool'
+import { ARROW_MCP_GUIDE, createArrowDrawTool } from './mcp-draw-tool'
+import { currentPenColor, trackPenColor } from './pen-color'
 import { ARROW_LINE_WIDTH_DEFAULT, clampArrowLineWidth } from './line-width'
 import ArrowToolButton from './ArrowToolButton.vue'
 import {
@@ -62,12 +66,15 @@ const liveSettings: {
   lineWidth: ARROW_LINE_WIDTH_DEFAULT,
 }
 
-const arrowTool = createArrowTool({
+const liveOptions = {
   headStyle: () => liveSettings.headStyle,
   doubleHeaded: () => liveSettings.doubleHeaded,
   lineStyle: () => liveSettings.lineStyle,
   lineWidth: () => liveSettings.lineWidth,
-})
+}
+
+const arrowTool = createArrowTool(liveOptions)
+const drawTool = createArrowDrawTool({ ...liveOptions, penColor: currentPenColor })
 
 
 const ARROW_CURSOR = {
@@ -86,8 +93,10 @@ export default defineModule({
   id: MODULE_ID,
   version: '1.1.0',
   settingsSchema,
+  mcpGuide: ARROW_MCP_GUIDE,
 
   setup(ctx) {
+    ctx.onDispose(trackPenColor())
     const apply = (s: ArrowSettings) => {
       liveSettings.headStyle = clampHeadStyle(s.headStyle)
       liveSettings.doubleHeaded = clampDoubleHeaded(s.doubleHeaded)
@@ -146,6 +155,7 @@ export default defineModule({
         handler: activateArrowTool,
       },
     ],
+    mcpTools: [drawTool],
     locales: {
       en,
       'zh-Hant': zhHant,

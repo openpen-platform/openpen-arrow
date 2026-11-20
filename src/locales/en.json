@@ -18,5 +18,8 @@
       "hollow": "Hollow"
     },
     "doubleHeaded": "Double-headed"
+  },
+  "mcp": {
+    "drawTitle": "Draw arrow"
   }
 }

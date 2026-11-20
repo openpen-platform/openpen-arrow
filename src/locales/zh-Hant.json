@@ -18,5 +18,8 @@
       "hollow": "空心"
     },
     "doubleHeaded": "雙向箭頭"
+  },
+  "mcp": {
+    "drawTitle": "畫箭頭"
   }
 }

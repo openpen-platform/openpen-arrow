@@ -19,7 +19,7 @@
       "alt": "Arrows are dragged onto a page, one snaps to 45° with Shift, and the panel switches to a hollow, dashed, double-headed style."
     }
   ],
-  "minAppVersion": "1.6.0",
+  "minAppVersion": "1.7.0",
   "renderer": "dist/renderer.js",
   "changelog": [
     "1.1.1: Marketplace icon, cover image and Traditional and Simplified Chinese descriptions.",
