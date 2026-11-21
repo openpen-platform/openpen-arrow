@@ -26,6 +26,6 @@
     "Options panel in the control bar: click the caret next to the Arrow button to set line width, head style, line style and double-headed.",
     "New line styles: solid, dashed and dotted; the arrowhead always stays solid.",
     "New shortcut Ctrl+Alt+A (Cmd+Option+A on macOS) switches to the Arrow tool; it can be rebound in Settings.",
-    "Requires OpenPen 1.6.0 or later."
+    "Requires OpenPen 1.7.0 or later."
   ]
 }
