@@ -1,12 +1,28 @@
 {
   "id": "@openpen/arrow",
   "name": "Arrow",
-  "version": "1.1.1-rc.1",
+  "version": "1.1.1",
   "author": "OpenPen",
-  "description": "Straight-line tool with arrowheads. Solid, open, or hollow heads; optional double-ended. Hold Shift to snap to 45°.",
+  "description": "Draws straight arrows with solid, open or hollow heads, single or double-ended; hold Shift to snap to 45 degrees.",
+  "descriptionLocalized": {
+    "zh-Hant": "畫直線箭頭，箭頭可選實心、開口或空心；按住 Shift 以 45° 對齊。",
+    "zh-Hans": "画直线箭头，箭头可选实心、开口或空心；按住 Shift 以 45° 对齐。"
+  },
+  "icon": ".github/marketplace/icon.png",
+  "screenshots": [
+    {
+      "src": ".github/marketplace/cover.png",
+      "alt": "An arrow points at the Publish button on a documentation page."
+    },
+    {
+      "src": ".github/readme-demo.gif",
+      "alt": "Arrows are dragged onto a page, one snaps to 45° with Shift, and the panel switches to a hollow, dashed, double-headed style."
+    }
+  ],
   "minAppVersion": "1.6.0",
   "renderer": "dist/renderer.js",
   "changelog": [
+    "1.1.1: Marketplace icon, cover image and Traditional and Simplified Chinese descriptions.",
     "Options panel in the control bar: click the caret next to the Arrow button to set line width, head style, line style and double-headed.",
     "New line styles: solid, dashed and dotted; the arrowhead always stays solid.",
     "New shortcut Ctrl+Alt+A (Cmd+Option+A on macOS) switches to the Arrow tool; it can be rebound in Settings.",
