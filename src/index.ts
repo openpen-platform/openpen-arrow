@@ -91,7 +91,7 @@ const ARROW_CURSOR = {
 
 export default defineModule({
   id: MODULE_ID,
-  version: '1.1.0',
+  version: '1.2.0',
   settingsSchema,
   mcpGuide: ARROW_MCP_GUIDE,
 
